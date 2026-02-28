@@ -1,10 +1,5 @@
 [
   {
-    "name": "com.example.handler.S3SnsEventHandler",
-    "allDeclaredConstructors": true,
-    "allDeclaredMethods": true
-  },
-  {
     "name": "com.amazonaws.services.lambda.runtime.events.SNSEvent",
     "allDeclaredFields": true,
     "allDeclaredMethods": true,
@@ -29,55 +24,11 @@
     "allDeclaredConstructors": true
   },
   {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$S3EventNotificationRecord",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$S3Entity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$S3BucketEntity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$S3ObjectEntity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$RequestParametersEntity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$ResponseElementsEntity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification$UserIdentityEntity",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
     "name": "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "com.fasterxml.jackson.datatype.joda.JodaModule",
     "allDeclaredConstructors": true
   }
 ]

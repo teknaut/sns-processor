@@ -1,0 +1,437 @@
+{
+  "service": {
+    "service": "s3-sns-processor",
+    "serviceObject": {
+      "name": "s3-sns-processor"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "provided.al2023",
+      "architecture": "x86_64",
+      "region": "eu-west-1",
+      "stage": "dev",
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:GetObjectAttributes"
+              ],
+              "Resource": {
+                "Fn::Sub": "arn:aws:s3:::s3-sns-processor-dev-uploads/*"
+              }
+            }
+          ]
+        }
+      },
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "S3EventProcessorLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/s3-sns-processor-dev-s3EventProcessor"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "s3-sns-processor",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-sns-processor-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-sns-processor-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][0]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "s3-sns-processor",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "S3EventProcessorLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-eu-west-1-c1aac179-3f1a",
+                "S3Key": "serverless/s3-sns-processor/dev/1772288856379-2026-02-28T14:27:36.379Z/function.zip"
+              },
+              "Handler": "com.example.handler.S3SnsEventHandler",
+              "Runtime": "provided.al2023",
+              "FunctionName": "s3-sns-processor-dev-s3EventProcessor",
+              "MemorySize": 256,
+              "Timeout": 30,
+              "Architectures": [
+                "x86_64"
+              ],
+              "Description": "Processes S3 object events delivered via SNS",
+              "Environment": {
+                "Variables": {
+                  "STAGE": "dev"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "S3EventProcessorLogGroup"
+            ]
+          },
+          "S3EventProcessorLambdaVersionhC77FNmbdF2WMp3FvVwlcrJ23OcEKUEPq7slOFb52Q": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "S3EventProcessorLambdaFunction"
+              },
+              "CodeSha256": "n8MJJLZLZZGh5zn3QlLix+i8ClS1ss4bxKkS6ouxbqw=",
+              "Description": "Processes S3 object events delivered via SNS"
+            }
+          },
+          "S3EventProcessorSnsSubscriptionS3snsprocessordevs3events": {
+            "Type": "AWS::SNS::Subscription",
+            "Properties": {
+              "TopicArn": {
+                "Ref": "S3EventsTopic"
+              },
+              "Protocol": "lambda",
+              "Endpoint": {
+                "Fn::GetAtt": [
+                  "S3EventProcessorLambdaFunction",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "S3EventProcessorLambdaPermissionS3snsprocessordevs3eventsSNS": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "S3EventProcessorLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "sns.amazonaws.com",
+              "SourceArn": {
+                "Ref": "S3EventsTopic"
+              }
+            }
+          },
+          "S3EventsTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+              "TopicName": "s3-sns-processor-dev-s3-events"
+            }
+          },
+          "S3TopicPolicy": {
+            "Type": "AWS::SNS::TopicPolicy",
+            "Properties": {
+              "Topics": [
+                {
+                  "Ref": "S3EventsTopic"
+                }
+              ],
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "s3.amazonaws.com"
+                    },
+                    "Action": "sns:Publish",
+                    "Resource": {
+                      "Ref": "S3EventsTopic"
+                    },
+                    "Condition": {
+                      "ArnLike": {
+                        "aws:SourceArn": {
+                          "Fn::Sub": "arn:aws:s3:::s3-sns-processor-dev-uploads"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "UploadsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "DependsOn": [
+              "S3TopicPolicy"
+            ],
+            "Properties": {
+              "BucketName": "s3-sns-processor-dev-uploads",
+              "NotificationConfiguration": {
+                "TopicConfigurations": [
+                  {
+                    "Event": "s3:ObjectCreated:Put",
+                    "Topic": {
+                      "Ref": "S3EventsTopic"
+                    }
+                  },
+                  {
+                    "Event": "s3:ObjectCreated:CompleteMultipartUpload",
+                    "Topic": {
+                      "Ref": "S3EventsTopic"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-eu-west-1-c1aac179-3f1a",
+            "Export": {
+              "Name": "sls-s3-sns-processor-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "S3EventProcessorLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "S3EventProcessorLambdaVersionhC77FNmbdF2WMp3FvVwlcrJ23OcEKUEPq7slOFb52Q"
+            },
+            "Export": {
+              "Name": "sls-s3-sns-processor-dev-S3EventProcessorLambdaFunctionQualifiedArn"
+            }
+          },
+          "UploadsBucketName": {
+            "Value": {
+              "Ref": "UploadsBucket"
+            },
+            "Export": {
+              "Name": "s3-sns-processor-dev-uploads-bucket"
+            }
+          },
+          "S3EventsTopicArn": {
+            "Value": {
+              "Ref": "S3EventsTopic"
+            },
+            "Export": {
+              "Name": "s3-sns-processor-dev-s3-events-topic"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "pluginsData": {},
+    "functions": {
+      "s3EventProcessor": {
+        "handler": "com.example.handler.S3SnsEventHandler",
+        "description": "Processes S3 object events delivered via SNS",
+        "memorySize": 256,
+        "timeout": 30,
+        "environment": {
+          "STAGE": "dev"
+        },
+        "events": [
+          {
+            "sns": {
+              "arn": {
+                "Ref": "S3EventsTopic"
+              },
+              "topicName": "s3-sns-processor-dev-s3-events"
+            }
+          }
+        ],
+        "name": "s3-sns-processor-dev-s3EventProcessor",
+        "package": {},
+        "memory": 256,
+        "runtime": "provided.al2023",
+        "vpc": {},
+        "versionLogicalId": "S3EventProcessorLambdaVersionhC77FNmbdF2WMp3FvVwlcrJ23OcEKUEPq7slOFb52Q"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "S3EventsTopic": {
+          "Type": "AWS::SNS::Topic",
+          "Properties": {
+            "TopicName": "s3-sns-processor-dev-s3-events"
+          }
+        },
+        "S3TopicPolicy": {
+          "Type": "AWS::SNS::TopicPolicy",
+          "Properties": {
+            "Topics": [
+              {
+                "Ref": "S3EventsTopic"
+              }
+            ],
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "s3.amazonaws.com"
+                  },
+                  "Action": "sns:Publish",
+                  "Resource": {
+                    "Ref": "S3EventsTopic"
+                  },
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": {
+                        "Fn::Sub": "arn:aws:s3:::s3-sns-processor-dev-uploads"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "UploadsBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DependsOn": [
+            "S3TopicPolicy"
+          ],
+          "Properties": {
+            "BucketName": "s3-sns-processor-dev-uploads",
+            "NotificationConfiguration": {
+              "TopicConfigurations": [
+                {
+                  "Event": "s3:ObjectCreated:Put",
+                  "Topic": {
+                    "Ref": "S3EventsTopic"
+                  }
+                },
+                {
+                  "Event": "s3:ObjectCreated:CompleteMultipartUpload",
+                  "Topic": {
+                    "Ref": "S3EventsTopic"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Outputs": {
+        "UploadsBucketName": {
+          "Value": {
+            "Ref": "UploadsBucket"
+          },
+          "Export": {
+            "Name": "s3-sns-processor-dev-uploads-bucket"
+          }
+        },
+        "S3EventsTopicArn": {
+          "Value": {
+            "Ref": "S3EventsTopic"
+          },
+          "Export": {
+            "Name": "s3-sns-processor-dev-s3-events-topic"
+          }
+        }
+      }
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless",
+    "initialServerlessConfig": {
+      "service": "s3-sns-processor",
+      "frameworkVersion": "4",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "package": {
+        "artifact": "target/function.zip",
+        "artifactsS3KeyDirname": "serverless/s3-sns-processor/dev/code-artifacts",
+        "deploymentBucket": "serverless-framework-deployments-eu-west-1-c1aac179-3f1a",
+        "artifactDirectoryName": "serverless/s3-sns-processor/dev/1772288856379-2026-02-28T14:27:36.379Z"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "appId": null,
+    "orgId": null,
+    "layers": {}
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/s3-sns-processor/dev/1772288856379-2026-02-28T14:27:36.379Z",
+    "artifact": "function.zip"
+  }
+}

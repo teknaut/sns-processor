@@ -4,10 +4,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
-import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3EventNotificationRecord;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.List;
@@ -22,9 +23,13 @@ import java.util.List;
  */
 public class S3SnsEventHandler implements RequestHandler<SNSEvent, Void> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+            .addModule(new JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            // SNS/S3 event JSON uses PascalCase keys (e.g. "Records", "Sns")
+            // while the Java fields use camelCase — enable case-insensitive matching
+            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+            .build();
 
     @Override
     public Void handleRequest(SNSEvent event, Context context) {
@@ -47,14 +52,16 @@ public class S3SnsEventHandler implements RequestHandler<SNSEvent, Void> {
         logger.log(String.format("Processing SNS message: %s%n", messageId));
 
         try {
-            S3EventNotification s3Notification = OBJECT_MAPPER.readValue(message, S3EventNotification.class);
+            // Parse the inner S3 notification using the tree model to avoid
+            // S3EventNotification's @JsonCreator reflection issues in native-image
+            JsonNode s3Notification = OBJECT_MAPPER.readTree(message);
 
-            for (S3EventNotificationRecord s3Record : s3Notification.getRecords()) {
-                String eventName = s3Record.getEventName();
-                String bucket   = s3Record.getS3().getBucket().getName();
+            for (JsonNode s3Record : s3Notification.get("Records")) {
+                String eventName = s3Record.get("eventName").asText();
+                String bucket    = s3Record.get("s3").get("bucket").get("name").asText();
                 // S3 URL-encodes object keys in event notifications; decode as needed
-                String key      = s3Record.getS3().getObject().getKey();
-                Integer size    = s3Record.getS3().getObject().getSize();
+                String key       = s3Record.get("s3").get("object").get("key").asText();
+                long   size      = s3Record.get("s3").get("object").get("size").asLong();
 
                 logger.log(String.format(
                     "S3 Event | type=%s | bucket=%s | key=%s | size=%d bytes%n",

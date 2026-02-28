@@ -18,7 +18,6 @@
         <!-- Dependency versions -->
         <aws-lambda-java-core.version>1.2.3</aws-lambda-java-core.version>
         <aws-lambda-java-events.version>3.11.4</aws-lambda-java-events.version>
-        <aws-lambda-java-ric.version>2.5.0</aws-lambda-java-ric.version>
         <jackson.version>2.17.2</jackson.version>
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
 
@@ -44,13 +43,6 @@
             <version>${aws-lambda-java-events.version}</version>
         </dependency>
 
-        <!-- Lambda Runtime Interface Client (custom runtime bootstrap) -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-runtime-interface-client</artifactId>
-            <version>${aws-lambda-java-ric.version}</version>
-        </dependency>
-
         <!-- JSON deserialization -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -60,6 +52,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- SNSEvent.SNS.timestamp is org.joda.time.DateTime -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 
@@ -116,8 +114,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <!-- Entry point is the Lambda Runtime Interface Client -->
-                            <mainClass>com.amazonaws.services.lambda.runtime.api.client.AWSLambda</mainClass>
+                            <!-- Entry point reads _HANDLER env var and forwards to the RIC -->
+                            <mainClass>com.example.LambdaBootstrap</mainClass>
                             <imageName>bootstrap</imageName>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <buildArgs>
