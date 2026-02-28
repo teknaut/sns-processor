@@ -1,34 +1,6 @@
 [
   {
-    "name": "com.amazonaws.services.lambda.runtime.events.SNSEvent",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.SNSEvent$SNSRecord",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.SNSEvent$SNS",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.SNSEvent$MessageAttribute",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
     "name": "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule",
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.fasterxml.jackson.datatype.joda.JodaModule",
     "allDeclaredConstructors": true
   }
 ]

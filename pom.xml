@@ -17,7 +17,6 @@
 
         <!-- Dependency versions -->
         <aws-lambda-java-core.version>1.2.3</aws-lambda-java-core.version>
-        <aws-lambda-java-events.version>3.11.4</aws-lambda-java-events.version>
         <jackson.version>2.17.2</jackson.version>
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
 
@@ -36,13 +35,6 @@
             <version>${aws-lambda-java-core.version}</version>
         </dependency>
 
-        <!-- SNSEvent and S3EventNotification models -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-events</artifactId>
-            <version>${aws-lambda-java-events.version}</version>
-        </dependency>
-
         <!-- JSON deserialization -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -52,12 +44,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <!-- SNSEvent.SNS.timestamp is org.joda.time.DateTime -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 

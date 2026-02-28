@@ -14,74 +14,27 @@ provider:
           Action:
             - s3:GetObject
             - s3:GetObjectAttributes
-          Resource: !Sub 'arn:aws:s3:::${self:service}-${sls:stage}-uploads/*'
+          Resource: arn:aws:s3:::${self:service}-${sls:stage}-uploads/*
 
-# The native bootstrap binary is packaged by the build script into function.zip
 package:
   artifact: target/function.zip
 
 functions:
   s3EventProcessor:
-    handler: com.example.handler.S3SnsEventHandler
-    description: Processes S3 object events delivered via SNS
+    handler: com.example.handler.S3EventHandler
+    description: Processes S3 object events directly
     memorySize: 256
     timeout: 30
     environment:
       STAGE: ${sls:stage}
     events:
-      # Subscribe this Lambda to the SNS topic that receives S3 notifications
-      - sns:
-          arn: !Ref S3EventsTopic
-          topicName: ${self:service}-${sls:stage}-s3-events
+      - s3:
+          bucket: ${self:service}-${sls:stage}-uploads
+          event: s3:ObjectCreated:*
 
 resources:
-  Resources:
-
-    # SNS topic that S3 publishes events to
-    S3EventsTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: ${self:service}-${sls:stage}-s3-events
-
-    # Allow S3 to publish to the SNS topic.
-    # Must be created before the S3 bucket; otherwise the notification config will be rejected.
-    S3TopicPolicy:
-      Type: AWS::SNS::TopicPolicy
-      Properties:
-        Topics:
-          - !Ref S3EventsTopic
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service: s3.amazonaws.com
-              Action: sns:Publish
-              Resource: !Ref S3EventsTopic
-              Condition:
-                ArnLike:
-                  aws:SourceArn: !Sub 'arn:aws:s3:::${self:service}-${sls:stage}-uploads'
-
-    # S3 bucket with event notifications sent to SNS for creates and overwrites
-    UploadsBucket:
-      Type: AWS::S3::Bucket
-      DependsOn: S3TopicPolicy
-      Properties:
-        BucketName: ${self:service}-${sls:stage}-uploads
-        NotificationConfiguration:
-          TopicConfigurations:
-            # s3:ObjectCreated:Put covers both new uploads and overwrites (modifications)
-            - Event: 's3:ObjectCreated:Put'
-              Topic: !Ref S3EventsTopic
-            - Event: 's3:ObjectCreated:CompleteMultipartUpload'
-              Topic: !Ref S3EventsTopic
-
   Outputs:
     UploadsBucketName:
-      Value: !Ref UploadsBucket
+      Value: ${self:service}-${sls:stage}-uploads
       Export:
         Name: ${self:service}-${sls:stage}-uploads-bucket
-    S3EventsTopicArn:
-      Value: !Ref S3EventsTopic
-      Export:
-        Name: ${self:service}-${sls:stage}-s3-events-topic
