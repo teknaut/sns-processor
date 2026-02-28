@@ -1,3 +1,6 @@
+# Serverless Framework
+.serverless/
+
 # Maven
 target/
 pom.xml.tag
